@@ -1,25 +1,93 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import Container from "react-bootstrap/Container";
+import Button from "react-bootstrap/Button";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import "./App.css";
+import axios from "axios";
+import Image from "react-bootstrap/Image";
 
+export interface Type {
+  type: {
+    name: string;
+  };
+}
+export interface PokeDetails {
+  name: string;
+  height: string;
+  weight: string;
+  sprites: {
+    other: {
+      "official-artwork": {
+        front_default: string;
+      };
+    };
+  };
+  types: Type[];
+}
+export interface Pokemnos {
+  name: string;
+  url: string;
+  details: PokeDetails;
+}
+export interface Api {
+  results: Pokemnos[];
+}
 function App() {
+  const [api, setApi] = useState<Api[]>([]);
+  const [pokemons, setPokemons] = useState<PokeDetails[]>([]);
+  const [details, setDetails] = useState<PokeDetails[]>([]);
+  const [limit, setLimit] = useState(20);
+
+  const fetchApi = async () => {
+    await axios
+      .get("https://pokeapi.co/api/v2/pokemon?limit=" + limit)
+      .then(async (res) => {
+        const poke: Array<PokeDetails> = [...pokemons];
+        for (let i = 0; i < limit; i++) {
+          let det = await axios.get<PokeDetails>(res.data.results[i].url);
+          poke.push({
+            name: res.data.results[i].name,
+            height: det.data.height,
+            weight: det.data.weight,
+            sprites: det.data.sprites,
+            types: det.data.types,
+          });
+        }
+        setPokemons([...poke]);
+      });
+  };
+
+  useEffect(() => {
+    fetchApi();
+  }, [limit]);
+
+  function changeLimit(x: any) {
+    //console.log(api?.results);
+    //setLimit(limit + x);
+  }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container>
+      <Button onClick={() => changeLimit(1)}>ADD</Button>
+      <Row className="justify-content-md-center">
+        {pokemons.map((pok) => (
+          <Col key={pok.name} className="text-center" md={6}>
+            <Row>
+              <Col>
+                <Image
+                  width={150}
+                  height={150}
+                  src={pok.sprites.other["official-artwork"].front_default}
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col>{pok.name}</Col>
+            </Row>
+          </Col>
+        ))}
+      </Row>
+    </Container>
   );
 }
 
