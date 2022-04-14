@@ -6,6 +6,7 @@ import Col from "react-bootstrap/Col";
 import "./App.css";
 import axios from "axios";
 import Image from "react-bootstrap/Image";
+import { Accordion } from "react-bootstrap";
 
 export interface Type {
   type: {
@@ -34,9 +35,7 @@ export interface Api {
   results: Pokemnos[];
 }
 function App() {
-  const [api, setApi] = useState<Api[]>([]);
   const [pokemons, setPokemons] = useState<PokeDetails[]>([]);
-  const [details, setDetails] = useState<PokeDetails[]>([]);
   const [limit, setLimit] = useState(20);
 
   const fetchApi = async () => {
@@ -72,18 +71,33 @@ function App() {
       <Row className="justify-content-md-center">
         {pokemons.map((pok) => (
           <Col key={pok.name} className="text-center" md={6}>
-            <Row>
-              <Col>
-                <Image
-                  width={150}
-                  height={150}
-                  src={pok.sprites.other["official-artwork"].front_default}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Col>{pok.name}</Col>
-            </Row>
+            <Accordion>
+              <Row>
+                <Col>
+                  <Image
+                    width={150}
+                    height={150}
+                    src={pok.sprites.other["official-artwork"].front_default}
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <Accordion.Item eventKey={pok.name}>
+                    <Accordion.Header>{pok.name}</Accordion.Header>
+                    <Accordion.Body>
+                      <Row>
+                        <Col md={12}>Height: {pok.height}</Col>
+                        <Col md={12}>Weight: {pok.weight}</Col>
+                        {pok.types.map((typ) => (
+                          <Col md={12}>{typ.type.name}</Col>
+                        ))}
+                      </Row>
+                    </Accordion.Body>
+                  </Accordion.Item>
+                </Col>
+              </Row>
+            </Accordion>
           </Col>
         ))}
       </Row>
